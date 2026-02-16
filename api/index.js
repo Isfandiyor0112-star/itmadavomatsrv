@@ -225,7 +225,10 @@ app.delete('/api/absents', async (req, res) => {
   res.json(users);
 });
 
-
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = 3000;
+  app.listen(PORT, () => console.log(`🚀 Локальный сервер: http://localhost:${PORT}`));
+}
 
 // Экспортируем модуль для Vercel
 module.exports = app;
