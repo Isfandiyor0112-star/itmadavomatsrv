@@ -156,6 +156,9 @@ app.post('/api/bot', async (req, res) => {
 
 
 // --- API ЭНДПОИНТЫ ---
+app.get('/', (req, res) => {
+  res.send('ITMA Server is Running ✅');
+});
 
 app.post('/api/login', async (req, res) => {
   const { login, password } = req.body;
