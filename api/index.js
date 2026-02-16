@@ -223,12 +223,6 @@ app.delete('/api/absents', async (req, res) => {
 });
 
 
-// --- ВАЖНО ДЛЯ VERCEL ---
-// Не запускаем app.listen в продакшене, Vercel сделает это сам
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = 3000;
-  app.listen(PORT, () => console.log(`🚀 Локальный сервер: http://localhost:${PORT}`));
-}
 
 // Экспортируем модуль для Vercel
 module.exports = app;
