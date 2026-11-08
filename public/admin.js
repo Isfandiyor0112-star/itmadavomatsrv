@@ -115,7 +115,7 @@ window.handleExcelExport = async function(type) {
         }
     });
 
-    XLSX.writeFile(wb, `Report_School22_${selectedDate}.xlsx`);
+    XLSX.writeFile(wb, `Report_Muhandis_${selectedDate}.xlsx`);
 };
 
 async function clearHistory() {
