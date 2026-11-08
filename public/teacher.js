@@ -116,18 +116,18 @@ window.deleteEntry = async (id, name) => {
 };
 
 // Проверка новостей при загрузке страницы
+window.currentNewsData = null; // Глобальная переменная для новости
+
+// Проверка новостей при загрузке страницы
 async function checkNewsIndicator() {
     try {
         const res = await fetch('https://itmadavomat.vercel.app/latest-news');
         const data = await res.json();
         
-        // Если в базе есть текст и он не дефолтный — зажигаем уведомление
         const badge = document.getElementById('newsBadge');
         if (data && data.text && data.text !== "Новостей пока нет") {
             if (badge) badge.style.display = 'block';
-            
-            // Сохраняем текст в атрибут кнопки, чтобы не качать заново при клике
-            document.getElementById('newsBtn').setAttribute('data-last-news', data.text);
+            window.currentNewsData = data; // Сохраняем новость (текст, картинку, дату)
         }
     } catch (e) {
         console.error("Ошибка проверки новостей:", e);
@@ -137,11 +137,26 @@ async function checkNewsIndicator() {
 // Показ новости в модальном окне
 window.showNews = () => {
     const lang = localStorage.getItem('lang') || 'ru';
-    const newsText = document.getElementById('newsBtn').getAttribute('data-last-news');
     const content = document.getElementById('newsContent');
     
-    if (newsText) {
-        content.innerHTML = `<div class="p-2">${newsText}</div>`;
+    if (window.currentNewsData) {
+        const { text, imageUrl, date } = window.currentNewsData;
+        
+        // Красиво форматируем дату 
+        const dateObj = new Date(date);
+        const dateString = dateObj.toLocaleString(lang === 'ru' ? 'ru-RU' : 'uz-UZ', { 
+            day: '2-digit', month: '2-digit', year: 'numeric', 
+            hour: '2-digit', minute: '2-digit' 
+        });
+
+        // Собираем HTML
+        let html = `<div class="text-white-50 small mb-3">🗓 ${dateString}</div>`;
+        if (imageUrl) {
+            html += `<img src="${imageUrl}" style="width: 100%; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">`;
+        }
+        html += `<div style="font-size: 1.1rem; line-height: 1.5;">${text}</div>`;
+        
+        content.innerHTML = html;
     } else {
         content.textContent = lang === 'ru' ? "Новых сообщений нет" : "Yangi xabarlar yo'q";
     }
@@ -149,11 +164,9 @@ window.showNews = () => {
     const modal = new bootstrap.Modal(document.getElementById('newsModal'));
     modal.show();
 
-    // Скрываем красный кружок, так как новость прочитана
     const badge = document.getElementById('newsBadge');
     if (badge) badge.style.display = 'none';
 };
-
 // Запускаем проверку при старте
 checkNewsIndicator();
 // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ---
