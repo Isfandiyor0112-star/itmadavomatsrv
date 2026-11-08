@@ -50,6 +50,13 @@ const Absent = mongoose.model('Absent', new mongoose.Schema({
   allstudents: String
 }), 'absents_itma'); // <--- МЫ ДОБАВИЛИ ЭТО ИМЯ
 
+// --- МОДЕЛЬ НОВОСТЕЙ ---
+const News = mongoose.model('News', new mongoose.Schema({
+  text: String,
+  imageUrl: String,
+  date: { type: Date, default: Date.now }
+}), 'news_itma');
+
 // --- ТЕЛЕГРАМ БОТ ---
 
 
@@ -117,12 +124,21 @@ app.post('/api/bot', async (req, res) => {
         const keyboard = teachers.map((t, i) => ([{ text: `${i+1}. ${t.name}`, callback_data: `manage:${t._id}` }]));
         await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { chat_id: chatId, text: "👨‍🏫 Список:", reply_markup: { inline_keyboard: keyboard } });
       }
+
+      if (action === 'start_news') {
+        userStates[chatId] = { action: 'adding_news' };
+        await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          chat_id: chatId, text: "📢 Отправьте текст новости ИЛИ фото с текстом в описании:"
+        });
+      }
+
       return res.sendStatus(200);
     }
 
-    // --- ОБРАБОТКА ТЕКСТА ---
-    if (!message || !message.text) return res.sendStatus(200);
-    const text = message.text;
+// --- ОБРАБОТКА ТЕКСТА И ФОТО ---
+    if (!message) return res.sendStatus(200);
+    // Берем текст, либо подпись к фото
+    const text = message.text || message.caption || "";
 
     if (userStates[chatId]) {
       const state = userStates[chatId];
@@ -133,6 +149,22 @@ app.post('/api/bot', async (req, res) => {
         const [l, p, n, c] = text.split(' ');
         if (c) await new User({ login: l, password: p, name: n, className: c }).save();
       }
+      
+      // --- НОВОЕ: ЕСЛИ БОТ ЖДЕТ НОВОСТЬ ---
+      if (state.action === 'adding_news') {
+        let imageUrl = null;
+        if (message.photo && message.photo.length > 0) {
+          const fileId = message.photo[message.photo.length - 1].file_id;
+          const fileRes = await axios.get(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`);
+          const filePath = fileRes.data.result.file_path;
+          imageUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
+        }
+        await new News({ text: text || "Без текста", imageUrl }).save();
+        delete userStates[chatId];
+        return await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { chat_id: chatId, text: "✅ Новость успешно опубликована в панели учителей!" });
+      }
+      // ------------------------------------
+
       delete userStates[chatId];
       return await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { chat_id: chatId, text: "✅ Готово!" });
     }
@@ -141,6 +173,10 @@ app.post('/api/bot', async (req, res) => {
       const teachers = await User.find();
       const keyboard = teachers.map((t, i) => ([{ text: `${i+1}. ${t.name} (${t.className})`, callback_data: `manage:${t._id}` }]));
       keyboard.push([{ text: "➕ Добавить учителя", callback_data: "start_add" }]);
+      
+      // --- ДОБАВЛЯЕМ КНОПКУ НОВОСТЕЙ В МЕНЮ СТАРТ ---
+      keyboard.push([{ text: "📢 Опубликовать новость", callback_data: "start_news" }]);
+
       await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         chat_id: chatId, text: "👨‍🏫 **Управление базой:**", parse_mode: "Markdown", reply_markup: { inline_keyboard: keyboard }
       });
@@ -156,6 +192,19 @@ app.post('/api/bot', async (req, res) => {
 
 
 // --- API ЭНДПОИНТЫ ---
+
+app.get('/latest-news', async (req, res) => {
+  try {
+    const latestNews = await News.findOne().sort({ date: -1 });
+    if (latestNews) {
+      res.json({ text: latestNews.text, imageUrl: latestNews.imageUrl, date: latestNews.date });
+    } else {
+      res.json({ text: "Новостей пока нет", imageUrl: null, date: null });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
 
 app.post('/api/login', async (req, res) => {
   const { login, password } = req.body;
