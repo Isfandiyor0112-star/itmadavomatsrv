@@ -37,7 +37,7 @@ window.changeLang = function(lang) {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Установка языка при загрузке
-  const currentLang = localStorage.getItem('lang') || 'ru';
+  const currentLang = localStorage.getItem('lang') || 'uz';
   changeLang(currentLang);
 
 // --- УМНОЕ СКРЫТИЕ ИНТРО (С ВАШИМ СТАРЫМ ЭФФЕКТОМ) ---
