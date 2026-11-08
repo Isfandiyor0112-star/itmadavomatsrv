@@ -26,7 +26,8 @@ const translations = {
         confirm_del: "Удалить запись: ",
         prompt_edit: "Изменить имя ученика:",
         err_server: "Сервер недоступен",
-        support: "Поддержка: @imamaliev_11"
+        support: "Поддержка: @imamaliev_11",
+        logout: "Выйти" // ДОБАВЛЕН ПЕРЕВОД
     },
     uz: {
         teacher_prefix: "O'qituvchi: ",
@@ -51,7 +52,8 @@ const translations = {
         confirm_del: "O'chirilsinmi: ",
         prompt_edit: "Ismni tahrirlash:",
         err_server: "Server bilan aloqa yo'q",
-        support: "Yordam: @imamaliev_11"
+        support: "Yordam: @imamaliev_11",
+        logout: "Chiqish" // ДОБАВЛЕН ПЕРЕВОД
     }
 };
 
@@ -169,8 +171,8 @@ window.showNews = () => {
 };
 // Запускаем проверку при старте
 checkNewsIndicator();
-// --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ---
 
+// --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ---
 document.addEventListener('DOMContentLoaded', function() {
     const teacher = JSON.parse(localStorage.getItem('teacher'));
     if (!teacher) { window.location.href = 'index.html'; return; }
@@ -257,6 +259,13 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     updateList();
+
+    // ДОБАВЛЕНА ЛОГИКА КНОПКИ ВЫХОДА
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.onclick = () => {
+            localStorage.removeItem('teacher'); // Стираем аккаунт
+            window.location.replace('index.html'); // Возвращаем на экран входа
+        };
+    }
 });
-
-
