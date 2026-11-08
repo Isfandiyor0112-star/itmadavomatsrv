@@ -40,41 +40,44 @@ document.addEventListener('DOMContentLoaded', function() {
   const currentLang = localStorage.getItem('lang') || 'uz';
   changeLang(currentLang);
 
-// --- УМНОЕ СКРЫТИЕ ИНТРО (С ВАШИМ СТАРЫМ ЭФФЕКТОМ) ---
+// --- ЖЕЛЕЗОБЕТОННОЕ СКРЫТИЕ ИНТРО ---
   const intro = document.getElementById('videoIntro');
   const container = document.getElementById('loginContainer');
   
   if (intro) {
-    // Это ВАШ старый код один в один:
-    const runOldTimer = () => {
+    // Функция запуска таймера
+    const startIntroTimer = () => {
       setTimeout(() => {
         intro.style.opacity = '0';
         setTimeout(() => {
           intro.style.display = 'none';
           if (container) container.style.display = 'block';
         }, 500);
-      }, 4000);
+      }, 4000); // 4 секунды отсчитываются после старта видео
     };
 
-    // Запускаем ваш код только когда видео реально пошло:
+    // Проверяем: если видео УЖЕ играет (проскочил сигнал), запускаем сразу
     if (intro.currentTime > 0 && !intro.paused && !intro.ended && intro.readyState > 2) {
-        runOldTimer();
+        startIntroTimer();
     } else {
-        intro.addEventListener('playing', runOldTimer, { once: true });
+        // Иначе ждем сигнала о начале воспроизведения
+        intro.addEventListener('playing', startIntroTimer, { once: true });
         
-        // Предохранитель (если WebView вдруг заглючит и не запустит видео)
+        // ПРЕДОХРАНИТЕЛЬ: Если WebView вообще отказался играть видео (бывает на старых Android),
+        // принудительно скрываем интро через 5 секунд в любом случае.
         setTimeout(() => {
             if (container && container.style.display !== 'block') {
                 intro.style.display = 'none';
                 container.style.display = 'block';
             }
-        }, 6000);
+        }, 5000);
     }
   } else {
+    // Если тега video вообще нет в HTML
     if (container) container.style.display = 'block';
   }
   // ------------------------------------
-  // Логика входа
+   // Логика входа
   const form = document.getElementById('loginForm');
   if (form) {
     form.addEventListener('submit', async function(e) {
