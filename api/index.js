@@ -150,21 +150,31 @@ app.post('/api/bot', async (req, res) => {
         if (c) await new User({ login: l, password: p, name: n, className: c }).save();
       }
       
-      // --- НОВОЕ: ЕСЛИ БОТ ЖДЕТ НОВОСТЬ ---
+    // --- НОВОЕ: ЕСЛИ БОТ ЖДЕТ НОВОСТЬ ---
       if (state.action === 'adding_news') {
-        let imageUrl = null;
+        let imageBase64 = null; // Будем хранить Base64
+        
         if (message.photo && message.photo.length > 0) {
+          // Получаем ссылку на файл от ТГ
           const fileId = message.photo[message.photo.length - 1].file_id;
           const fileRes = await axios.get(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`);
           const filePath = fileRes.data.result.file_path;
-          imageUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
+          const fileUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
+
+          // СКАЧИВАЕМ И ПРЕВРАЩАЕМ В BASE64
+          const imageRes = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+          const base64Str = Buffer.from(imageRes.data).toString('base64');
+          const mimeType = imageRes.headers['content-type'];
+          
+          imageBase64 = `data:${mimeType};base64,${base64Str}`; // Готовый формат для тега <img>
         }
-        await new News({ text: text || "Без текста", imageUrl }).save();
+        
+        // Сохраняем в базу (теперь там не ссылка, а сама картинка!)
+        await new News({ text: text || "Без текста", imageUrl: imageBase64 }).save();
         delete userStates[chatId];
-        return await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { chat_id: chatId, text: "✅ Новость успешно опубликована в панели учителей!" });
+        return await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { chat_id: chatId, text: "✅ Новость успешно опубликована (картинка сохранена в БД)!" });
       }
       // ------------------------------------
-
       delete userStates[chatId];
       return await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { chat_id: chatId, text: "✅ Готово!" });
     }
