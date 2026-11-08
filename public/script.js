@@ -40,27 +40,43 @@ document.addEventListener('DOMContentLoaded', function() {
   const currentLang = localStorage.getItem('lang') || 'ru';
   changeLang(currentLang);
 
-  // --- УМНОЕ СКРЫТИЕ ИНТРО ---
+// --- ЖЕЛЕЗОБЕТОННОЕ СКРЫТИЕ ИНТРО ---
   const intro = document.getElementById('videoIntro');
   const container = document.getElementById('loginContainer');
   
   if (intro) {
-    // Ждем, пока видео реально начнет играть
-    intro.addEventListener('playing', () => {
+    // Функция запуска таймера
+    const startIntroTimer = () => {
       setTimeout(() => {
         intro.style.opacity = '0';
         setTimeout(() => {
           intro.style.display = 'none';
           if (container) container.style.display = 'block';
         }, 500);
-      }, 4000); // 4 секунды отсчитываются только после старта видео
-    }, { once: true });
+      }, 4000); // 4 секунды отсчитываются после старта видео
+    };
+
+    // Проверяем: если видео УЖЕ играет (проскочил сигнал), запускаем сразу
+    if (intro.currentTime > 0 && !intro.paused && !intro.ended && intro.readyState > 2) {
+        startIntroTimer();
+    } else {
+        // Иначе ждем сигнала о начале воспроизведения
+        intro.addEventListener('playing', startIntroTimer, { once: true });
+        
+        // ПРЕДОХРАНИТЕЛЬ: Если WebView вообще отказался играть видео (бывает на старых Android),
+        // принудительно скрываем интро через 5 секунд в любом случае.
+        setTimeout(() => {
+            if (container && container.style.display !== 'block') {
+                intro.style.display = 'none';
+                container.style.display = 'block';
+            }
+        }, 5000);
+    }
   } else {
-    // Предохранитель: если видео нет, сразу показываем логин
+    // Если тега video вообще нет в HTML
     if (container) container.style.display = 'block';
   }
-  // ---------------------------
-
+  // ------------------------------------
   // Логика входа
   const form = document.getElementById('loginForm');
   if (form) {
