@@ -17,7 +17,6 @@ const translations = {
   }
 };
 
-
 // Функция смены языка
 window.changeLang = function(lang) {
   const group = document.getElementById('langGroup');
@@ -41,16 +40,26 @@ document.addEventListener('DOMContentLoaded', function() {
   const currentLang = localStorage.getItem('lang') || 'ru';
   changeLang(currentLang);
 
-  // Скрытие интро
-  setTimeout(() => {
-    const intro = document.getElementById('videoIntro');
-    const container = document.getElementById('loginContainer');
-    if (intro) intro.style.opacity = '0';
-    setTimeout(() => {
-      if (intro) intro.style.display = 'none';
-      if (container) container.style.display = 'block';
-    }, 500);
-  }, 4000);
+  // --- УМНОЕ СКРЫТИЕ ИНТРО ---
+  const intro = document.getElementById('videoIntro');
+  const container = document.getElementById('loginContainer');
+  
+  if (intro) {
+    // Ждем, пока видео реально начнет играть
+    intro.addEventListener('playing', () => {
+      setTimeout(() => {
+        intro.style.opacity = '0';
+        setTimeout(() => {
+          intro.style.display = 'none';
+          if (container) container.style.display = 'block';
+        }, 500);
+      }, 4000); // 4 секунды отсчитываются только после старта видео
+    }, { once: true });
+  } else {
+    // Предохранитель: если видео нет, сразу показываем логин
+    if (container) container.style.display = 'block';
+  }
+  // ---------------------------
 
   // Логика входа
   const form = document.getElementById('loginForm');
@@ -81,5 +90,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
-
