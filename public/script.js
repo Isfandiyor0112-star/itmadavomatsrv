@@ -36,34 +36,50 @@ window.changeLang = function(lang) {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+  
   // Установка языка при загрузке
   const currentLang = localStorage.getItem('lang') || 'uz';
   changeLang(currentLang);
 
-// --- ЖЕЛЕЗОБЕТОННОЕ И ПЛАВНОЕ СКРЫТИЕ ИНТРО ---
+  // --- ЖЕЛЕЗОБЕТОННОЕ И ПЛАВНОЕ СКРЫТИЕ ИНТРО ---
   const intro = document.getElementById('videoIntro');
   const container = document.getElementById('loginContainer');
   
   if (intro) {
-    // Включаем плавную анимацию для прозрачности (opacity) на 0.5 секунды
     intro.style.transition = 'opacity 0.5s ease';
 
-    // Функция скрытия, которая сработает ТОЛЬКО когда видео закончится
     const hideIntro = () => {
-        // Плавно растворяем видео
         intro.style.opacity = '0';
         
-        // Ждем 500 мс (пока идет анимация), затем убираем его и показываем логин
         setTimeout(() => {
             intro.style.display = 'none';
-            if (container) container.style.display = 'block';
+            
+            // --- АВТОВХОД ПОСЛЕ ОКОНЧАНИЯ ВИДЕО ---
+            const savedTeacher = localStorage.getItem('teacher');
+            if (savedTeacher) {
+                try {
+                    const teacherObj = JSON.parse(savedTeacher);
+                    const adminLogins = ["bunyod" , "admin"];
+                    if (adminLogins.includes(teacherObj.login)) {
+                        window.location.replace("admin.html");
+                    } else {
+                        window.location.replace("teacher.html");
+                    }
+                } catch (e) {
+                    console.error("Ошибка чтения памяти", e);
+                    if (container) container.style.display = 'block';
+                }
+            } else {
+                // Если данных нет, показываем форму входа
+                if (container) container.style.display = 'block';
+            }
+            // ------------------------------------
+            
         }, 500); 
     };
 
-    // Слушаем сигнал 'ended' (видео полностью дошло до конца)
     intro.addEventListener('ended', hideIntro, { once: true });
     
-    // ПРЕДОХРАНИТЕЛЬ: на случай глюков WebView или слишком долгой загрузки (например, 7 секунд максимум)
     setTimeout(() => {
         if (intro.style.display !== 'none') {
             hideIntro();
@@ -71,11 +87,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 7000); 
 
   } else {
-    // Если тега video вообще нет в HTML
     if (container) container.style.display = 'block';
   }
   // ------------------------------------
-   // Логика входа
+  
+  // Логика входа
   const form = document.getElementById('loginForm');
   if (form) {
     form.addEventListener('submit', async function(e) {
