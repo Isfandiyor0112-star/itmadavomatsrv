@@ -40,38 +40,36 @@ document.addEventListener('DOMContentLoaded', function() {
   const currentLang = localStorage.getItem('lang') || 'uz';
   changeLang(currentLang);
 
-// --- ЖЕЛЕЗОБЕТОННОЕ СКРЫТИЕ ИНТРО ---
+// --- ЖЕЛЕЗОБЕТОННОЕ И ПЛАВНОЕ СКРЫТИЕ ИНТРО ---
   const intro = document.getElementById('videoIntro');
   const container = document.getElementById('loginContainer');
   
   if (intro) {
-    // Функция запуска таймера
-    const startIntroTimer = () => {
-      setTimeout(() => {
+    // Включаем плавную анимацию для прозрачности (opacity) на 0.5 секунды
+    intro.style.transition = 'opacity 0.5s ease';
+
+    // Функция скрытия, которая сработает ТОЛЬКО когда видео закончится
+    const hideIntro = () => {
+        // Плавно растворяем видео
         intro.style.opacity = '0';
+        
+        // Ждем 500 мс (пока идет анимация), затем убираем его и показываем логин
         setTimeout(() => {
-          intro.style.display = 'none';
-          if (container) container.style.display = 'block';
-        }, 500);
-      }, 4000); // 4 секунды отсчитываются после старта видео
+            intro.style.display = 'none';
+            if (container) container.style.display = 'block';
+        }, 500); 
     };
 
-    // Проверяем: если видео УЖЕ играет (проскочил сигнал), запускаем сразу
-    if (intro.currentTime > 0 && !intro.paused && !intro.ended && intro.readyState > 2) {
-        startIntroTimer();
-    } else {
-        // Иначе ждем сигнала о начале воспроизведения
-        intro.addEventListener('playing', startIntroTimer, { once: true });
-        
-        // ПРЕДОХРАНИТЕЛЬ: Если WebView вообще отказался играть видео (бывает на старых Android),
-        // принудительно скрываем интро через 5 секунд в любом случае.
-        setTimeout(() => {
-            if (container && container.style.display !== 'block') {
-                intro.style.display = 'none';
-                container.style.display = 'block';
-            }
-        }, 5000);
-    }
+    // Слушаем сигнал 'ended' (видео полностью дошло до конца)
+    intro.addEventListener('ended', hideIntro, { once: true });
+    
+    // ПРЕДОХРАНИТЕЛЬ: на случай глюков WebView или слишком долгой загрузки (например, 7 секунд максимум)
+    setTimeout(() => {
+        if (intro.style.display !== 'none') {
+            hideIntro();
+        }
+    }, 7000); 
+
   } else {
     // Если тега video вообще нет в HTML
     if (container) container.style.display = 'block';
