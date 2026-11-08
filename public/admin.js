@@ -1,4 +1,3 @@
-
 const API_URL = 'https://itmadavomat.vercel.app/api/absents';
 const API_USERS = 'https://itmadavomat.vercel.app/api/users?key=itma_secret_admin_key'; 
 
@@ -21,7 +20,8 @@ const translations = {
         xl_absent: "Отсутствует", xl_perc: "Процент %", xl_status: "Статус",
         xl_student: "Ученик", xl_reason: "Причина",
         hamma_darsda: "Все на уроках",
-        err_no_data: "Недостаточно данных! Нужно {n} дн."
+        err_no_data: "Недостаточно данных! Нужно {n} дн.",
+        logout: "Выйти" // ДОБАВЛЕН ПЕРЕВОД
     },
     uz: {
         admin_panel_title: "ITMAning Admin paneli",
@@ -37,7 +37,8 @@ const translations = {
         xl_absent: "Yo'qlar", xl_perc: "Foiz %", xl_status: "Holat",
         xl_student: "O'quvchi", xl_reason: "Sababi",
         hamma_darsda: "Hamma darsda",
-        err_no_data: "Ma'lumot kam! {n} kun kerak."
+        err_no_data: "Ma'lumot kam! {n} kun kerak.",
+        logout: "Chiqish" // ДОБАВЛЕН ПЕРЕВОД
     }
 };
 
@@ -191,6 +192,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clearBtn) {
         clearBtn.onclick = clearHistory;
     }
+
+    // 5. ДОБАВЛЕНА ЛОГИКА КНОПКИ ВЫХОДА
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.onclick = () => {
+            localStorage.removeItem('teacher'); // Стираем аккаунт
+            window.location.replace('index.html'); // Возвращаем на экран входа
+        };
+    }
 });
-
-
