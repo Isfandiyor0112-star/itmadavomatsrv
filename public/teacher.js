@@ -1,6 +1,6 @@
 // Конфигурация API
-const API_GET = 'https://itmadavomatsrv.vercel.app/api/absents'; 
-const API_ACTION = 'https://itmadavomatsrv.vercel.app/api/absent';
+const API_GET = 'https://itmadavomat.vercel.app/api/absents'; 
+const API_ACTION = 'https://itmadavomat.vercel.app/api/absent';
 
 const translations = {
     ru: {
