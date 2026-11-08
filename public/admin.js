@@ -1,6 +1,6 @@
 
-const API_URL = 'https://itmadavomatsrv.vercel.app/api/absents';
-const API_USERS = 'https://itmadavomatsrv.vercel.app/api/users?key=itma_secret_admin_key'; 
+const API_URL = 'https://itmadavomat.vercel.app/api/absents';
+const API_USERS = 'https://itmadavomat.vercel.app/api/users?key=itma_secret_admin_key'; 
 
 let absentsData = [];
 let allTeachers = []; 
