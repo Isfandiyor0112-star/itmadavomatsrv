@@ -118,7 +118,7 @@ window.deleteEntry = async (id, name) => {
 // Проверка новостей при загрузке страницы
 async function checkNewsIndicator() {
     try {
-        const res = await fetch('https://itmadavomatsrv.vercel.app/latest-news');
+        const res = await fetch('https://itmadavomat.vercel.app/latest-news');
         const data = await res.json();
         
         // Если в базе есть текст и он не дефолтный — зажигаем уведомление
